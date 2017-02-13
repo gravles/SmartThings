@@ -1,11 +1,11 @@
 /**
-*  NHL Goal Notifications
+*  MLB RunScored Notifications
 *
 *  Copyright 2017 Eric Luttmann
 *
 *  Description:
-*  Control lights, buttons, switches, sirens, and/or play your teams goal scoring horn when your 
-*  NHL team scores a goal.  In addition, you can get text messages and/or push notifications for 
+*  Control lights, buttons, switches, sirens, and/or play your teams run scoring horn when your 
+*  MLB team scores a run.  In addition, you can get text messages and/or push notifications for 
 *  status updates on game day... like notifications of game day, pregame start, game in process, score
 *  updates, and final scores.
 *
@@ -26,10 +26,10 @@ import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 
 definition(
-    name: "NHL Game Notifications",
+    name: "MLB Game Notifications",
     namespace: "ejluttmann",
     author: "Eric Luttmann",
-    description: "Get game notifications for any NHL team.",
+    description: "Get game notifications for any MLB team.",
     category: "My Apps",
     iconUrl: "https://cloud.githubusercontent.com/assets/2913371/22167524/3390bf68-df24-11e6-94c6-b099063842df.png",
     iconX2Url: "https://cloud.githubusercontent.com/assets/2913371/22167524/3390bf68-df24-11e6-94c6-b099063842df.png",
@@ -38,14 +38,14 @@ definition(
 
 preferences {
 
-    page(name: "startPage", title: "NHL Game Notifications", install: true, uninstall: true) {
+    page(name: "startPage", title: "MLB Game Notifications", install: true, uninstall: true) {
         section() {
-            input "nhlTeam", "enum", title: "Select NHL Team", required: true, displayDuringSetup: true, options: getTeamEnums()
+            input "mlbTeam", "enum", title: "Select MLB Team", required: true, displayDuringSetup: true, options: getTeamEnums()
             
-            href(name: "goals",
-                 title:"Goal Scoring", description:"Tap to setup goal scoring",
+            href(name: "runs",
+                 title:"Run Scoring", description:"Tap to setup run scoring",
                  required: false,
-                 page: "goalsPage")
+                 page: "runsPage")
             
             href(name: "notify",
                  title:"Game Notifications", description:"Tap to setup game notifications",
@@ -67,16 +67,16 @@ preferences {
         }        
     }
 
-    page(name: "goalsPage") {
+    page(name: "runsPage") {
         section("Momentary Buttons (ie. Doorbell, Alarm)"){
             input "buttons", "capability.momentary", title: "Devices Selection", required: false, multiple: true, displayDuringSetup: true
-            input "buttonDelay", "number", title: "Delay after goal (in seconds)", description: "1-120 seconds", required: false, range: "1..120"
+            input "buttonDelay", "number", title: "Delay after run (in seconds)", description: "1-120 seconds", required: false, range: "1..120"
         }
 
         section("Turn On/Off Switches"){
             input "switches", "capability.switch", title: "Select Lights", required: false, multiple: true, displayDuringSetup: true
             input "switchOnFor", "number", title: "Turn Off After", description: "1-120 seconds", required: false, multiple: false, displayDuringSetup: true, range: "1..120"
-            input "switchDelay", "number", title: "Delay after goal (in seconds)", description: "1-120 seconds", required: false, range: "1..120"
+            input "switchDelay", "number", title: "Delay after run (in seconds)", description: "1-120 seconds", required: false, range: "1..120"
         }
 
         section("Flashing Lights"){
@@ -84,7 +84,7 @@ preferences {
             input "numFlashes", "number", title: "Number of times to flash", description: "1-50 times", required: false, range: "1..50"
             input "flashOnFor", "number", title: "On for (default 1000ms)", description: "milliseconds", required: false
             input "flashOffFor", "number", title: "Off for (default 1000ms)", description: "milliseconds", required: false
-            input "flashDelay", "number", title: "Delay after goal (in seconds)", description: "1-120 seconds", required: false, range: "1..120"
+            input "flashDelay", "number", title: "Delay after run (in seconds)", description: "1-120 seconds", required: false, range: "1..120"
             input "lightColor", "enum", title: "Flashing Light Color?", required: false, multiple:false, options: ["White", "Red","Green","Blue","Yellow","Orange","Purple","Pink"]
             input "lightLevel", "enum", title: "Flashing Light Level?", required: false, options: [[10:"10%"],[20:"20%"],[30:"30%"],[40:"40%"],[50:"50%"],[60:"60%"],[70:"70%"],[80:"80%"],[90:"90%"],[100:"100%"]]
         }
@@ -93,24 +93,24 @@ preferences {
             input "sirens", "capability.alarm", title: "Sirens Selection", required: false, multiple: true
             input "sirensOnly", "bool", title: "Don't use the strobe", defaultValue: "false", displayDuringSetup: true, required:false
             input "sirensOnFor", "number", title: "Turn Off After", description: "1-10 seconds", required: false, multiple: false, displayDuringSetup: true, range: "1..10"
-            input "sirenDelay", "number", title: "Delay after goal (in seconds)", description: "1-120 seconds", required: false, range: "1..120"
+            input "sirenDelay", "number", title: "Delay after run (in seconds)", description: "1-120 seconds", required: false, range: "1..120"
         }
 
-        section ("Speaker used to play goal scoring horn"){
+        section ("Speaker used to play run scoring horn"){
             input "sound", "capability.musicPlayer", title: "Speaker Selection", required: false, displayDuringSetup: true
             input "volume", "number", title: "Speaker volume", description: "1-100%", required: false, range: "1..100"
             input "soundDuration", "number", title: "Duration to play (in seconds)", description: "1-120 seconds", required: false, range: "1..120"
-            input "soundDelay", "number", title: "Delay after goal (in seconds)", description: "1-120 seconds", required: false, range: "1..120"
+            input "soundDelay", "number", title: "Delay after run (in seconds)", description: "1-120 seconds", required: false, range: "1..120"
         }
     }
 
     page(name: "notifyPage") {
         section( "Enable notifications" ) {
-            input "sendGoalMessage", "bool", title: "Enable goal score notifications?", defaultValue: "true", displayDuringSetup: true, required:false
+            input "sendRunMessage", "bool", title: "Enable run score notifications?", defaultValue: "true", displayDuringSetup: true, required:false
             input "sendGameDayMessage", "bool", title: "Enable game day status notifications?", defaultValue: "false", displayDuringSetup: true, required:false
-            input "notificationSwitch", "capability.switch", title: "Use switch to enable/disable goal notifications", required: false, multiple: false, displayDuringSetup: true
-            input "manualGoalTrigger", "capability.button", title: "Manual Goal Trigger", required: false, multiple: false, displayDuringSetup: true
-            input "goalDelay", "number", title: "Notification delay after goal (in seconds)", description: "1-120 seconds", required: false, range: "1..120"
+            input "notificationSwitch", "capability.switch", title: "Use switch to enable/disable run notifications", required: false, multiple: false, displayDuringSetup: true
+            input "manualRunTrigger", "capability.button", title: "Manual Run Trigger", required: false, multiple: false, displayDuringSetup: true
+            input "runDelay", "number", title: "Notification delay after run (in seconds)", description: "1-120 seconds", required: false, range: "1..120"
         }
         
         section( "Push and Text Notifications" ) {
@@ -131,7 +131,7 @@ preferences {
 }
 
 private getTeamEnums() {
-    return ["Devils", "Islanders", "Rangers", "Flyers", "Penguins", "Bruins", "Sabres", "Canadiens", "Senators", "Maple Leafs", "Hurricanes", "Panthers", "Lightning", "Capitals", "Blackhawks", "Red Wings", "Predators", "Blues", "Flames", "Avalanche", "Oilers", "Canucks", "Ducks", "Stars", "Kings", "Sharks", "Blue Jackets", "Wild", "Jets", "Coyotes"]
+    return ["Athletics", "Pirates", "Padres", "Mariners", "Giants", "Cardinals", "Rays", "Rangers", "Blue Jays", "Twins", "Phillies", "Barves", "White Sox", "Marlins", "Yankees", "Brewers", "Angels", "D-backs", "Orioles", "Red Sox", "Cubs", "Reds", "Indians", "Rockies", "Tigers", "Astros", "Royals", "Dodgers", "Nationals", "Mets"]
 }
 
 def installed() {
@@ -149,12 +149,12 @@ def updated() {
 }
 
 def initialize() {
-	log.info "NHL Game Notifications. Version ${version()}"
+	log.info "MLB Game Notifications. Version ${version()}"
     
-    state.NHL_API_URL = "http://statsapi.web.nhl.com/api/v1"
+    state.MLB_API_URL = "http://statsapi.mlb.com/api/v1"
     state.HORN_URL = "http://wejustscored.com/audio/"
 
-    state.GAME_STATUS_SCHEDULED            = '1'
+    state.GAME_STATUS_SCHEDULED            = 'S'
     state.GAME_STATUS_PREGAME              = '2'
     state.GAME_STATUS_IN_PROGRESS          = '3'
     state.GAME_STATUS_IN_PROGRESS_CRITICAL = '4'
@@ -200,7 +200,7 @@ def initialize() {
     schedule(start, setupForGameDay)
     
     // setup subscriptions
-    subscribe(manualGoalTrigger, "button.pushed", manualGoalHandler)
+    subscribe(manualRunTrigger, "button.pushed", manualRunHandler)
     subscribe(notificationSwitch, "switch", notificationSwitchHandler)
 
 	if (notificationSwitch && notificationSwitch.currentSwitch == "off") {
@@ -226,12 +226,12 @@ def setupForGameDay() {
    	getTeam()
 }
 
-def manualGoalHandler(evt) {
+def manualRunHandler(evt) {
     try {
     	if (state.enableGameNotifications) {
-	    	teamGoalScored()
+	    	teamRunScored()
         } else {
-        	log.debug "Game Notifications has been disabled, ignore manual goal"
+        	log.debug "Game Notifications has been disabled, ignore manual run"
         }
     } catch (e) {
         log.error "something went wrong: $e"
@@ -274,7 +274,7 @@ def getTeamHandler(resp, data) {
         log.debug "Teams: ${teams}"
 
         for (rec in result.teams) {
-            if (settings.nhlTeam == rec.teamName) {
+            if (settings.mlbTeam == rec.teamName) {
                 state.Team = rec
                 log.debug "Found info on team ${state.Team.teamName}, id=${state.Team.id}"
                 found = true
@@ -288,7 +288,7 @@ def getTeamHandler(resp, data) {
     }
 
     if (found == false) {
-        log.debug "Unable to locate info on team ${settings.nhlTeam}, trying again in 30 seconds..."
+        log.debug "Unable to locate info on team ${settings.mlbTeam}, trying again in 30 seconds..."
 
         def now = new Date()
         def runTime = new Date(now.getTime() + (30 * 1000))
@@ -301,9 +301,9 @@ def getTeamHandler(resp, data) {
 }
 
 def getTeam() {
-    log.debug "Setup for team ${settings.nhlTeam}"
+    log.debug "Setup for team ${settings.mlbTeam}"
     try {
-        def params = [uri: "${state.NHL_API_URL}/teams"] 
+        def params = [uri: "${state.MLB_API_URL}/teams?sportId=1"] 
         asynchttp_v1.get(getTeamHandler, params)
     } catch (e) {
         log.error "something went wrong: $e"
@@ -407,9 +407,9 @@ def checkIfGameDay() {
         if (settings.debugCheckDate) {
             todaysDate = settings.debugCheckDate
         }
-        def params = [uri: "${state.NHL_API_URL}/schedule?teamId=${state.Team.id}&date=${todaysDate}&expand=schedule.teams,schedule.broadcasts.all"] 
+        def params = [uri: "${state.MLB_API_URL}/schedule?sportID=1&teamId=${state.Team.id}&date=${todaysDate}&expand=schedule.teams,schedule.broadcasts.all"] 
 
-        log.debug "Determine if it is game day for team ${settings.nhlTeam}, requesting game day schedule for ${todaysDate}"
+        log.debug "Determine if it is game day for team ${settings.mlbTeam}, requesting game day schedule for ${todaysDate}"
         asynchttp_v1.get(checkIfGameDayHandler, params)
     } catch (e) {
         log.error "something went wrong: $e"
@@ -466,13 +466,13 @@ def checkGameStatusHandler(resp, data) {
                         state.opponentScore = 0
                     }
 
-                    def delay = settings.goalDelay ?: 0
+                    def delay = settings.runDelay ?: 0
                     if (teamScore > state.teamScore) {
                         state.teamScore = teamScore
-                        runIn(delay, teamGoalScored)
+                        runIn(delay, teamRunScored)
                     } else if (opponentScore > state.opponentScore) {
                         state.opponentScore = opponentScore
-                        runIn(delay, opponentGoalScored)
+                        runIn(delay, opponentRunScored)
                     } else {
                         log.debug "No change in scores"
                     }
@@ -538,9 +538,9 @@ def checkGameStatus() {
         if (settings.debugCheckDate) {
             todaysDate = settings.debugCheckDate
         }
-        def params = [uri: "${state.NHL_API_URL}/schedule?teamId=${state.Team.id}&date=${todaysDate}"] 
+        def params = [uri: "${state.MLB_API_URL}/schedule?sportId=1&teamId=${state.Team.id}&date=${todaysDate}"] 
 
-        log.debug "Requesting ${settings.nhlTeam} game schedule for ${todaysDate}"
+        log.debug "Requesting ${settings.mlbTeam} game schedule for ${todaysDate}"
         asynchttp_v1.get(checkGameStatusHandler, params)
     } catch (e) {
         log.error "something went wrong: $e"
@@ -793,10 +793,10 @@ def getName(teams, opponent) {
     return name
 }
 
-def teamGoalScored() {
+def teamRunScored() {
     log.debug "GGGOOOAAALLL!!!"
 
-    triggerTeamGoalNotifications()
+    triggerTeamRunNotifications()
 
     triggerButtons()
     triggerSwitches()
@@ -805,7 +805,7 @@ def teamGoalScored() {
     triggerFlashing()
 }
 
-def opponentGoalScored() {
+def opponentRunScored() {
     log.debug "BOOOOOOO!!!"
 
     triggerTeamOpponentNotifications()
@@ -1132,22 +1132,22 @@ def restoreLightOptions(lights) {
     }
 }
 
-def triggerTeamGoalNotifications() {
-    if (sendGoalMessage) {
+def triggerTeamRunNotifications() {
+    if (sendRunMessage) {
         def game = state.Game
         def msg = null
 
         if (game) {           
-            def goals = getTeamScore(game.teams)
+            def runs = getTeamScore(game.teams)
 
-            if (goals == 1) {
-                msg = getTeamName(game.teams) + " scored thier first goal!"
+            if (runs == 1) {
+                msg = getTeamName(game.teams) + " scored thier first run!"
             } else {
-                msg = getTeamName(game.teams) + " have scored ${goals} goals!"
+                msg = getTeamName(game.teams) + " have scored ${runs} runs!"
             }
             msg = msg + "\n${game.teams.away.team.name} ${game.teams.away.score}, ${game.teams.home.team.name} ${game.teams.home.score}"
         } else {
-            msg = "${settings.nhlTeam} just Scored!"
+            msg = "${settings.mlbTeam} just Scored!"
         }
 
         triggerNotifications(msg)
@@ -1155,12 +1155,12 @@ def triggerTeamGoalNotifications() {
 }
 
 def triggerTeamOpponentNotifications() {
-    if (sendGoalMessage) {
+    if (sendRunMessage) {
         def game = state.Game
         def msg = null
 
         if (game) {           
-            def goals = getOpponentScore(game.teams)
+            def runs = getOpponentScore(game.teams)
 
             msg = getOpponentName(game.teams) + " scored."
             msg = msg + "\n${game.teams.away.team.name} ${game.teams.away.score}, ${game.teams.home.team.name} ${game.teams.home.score}"
@@ -1269,7 +1269,7 @@ def triggerNotifications(msg) {
 }
 
 private def versionParagraph() {
-    def text = "NHL Game Notifications\nVersion ${version()}"
+    def text = "MLB Game Notifications\nVersion ${version()}"
 }
 
 private def version() {
